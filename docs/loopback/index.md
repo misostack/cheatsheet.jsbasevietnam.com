@@ -178,6 +178,147 @@ id: string;
 
 - https://github.com/loopbackio/loopback-next/issues/1857
 
+> BaseEntity
+
+```ts
+// ./src/models/base.entity.ts
+import { Entity, property } from "@loopback/repository";
+
+export abstract class BaseEntity extends Entity {
+  @property({
+    type: "string",
+    id: true,
+    defaultFn: "uuid",
+  })
+  id?: string;
+
+  @property({
+    type: "Date",
+    name: "created_at",
+  })
+  createdAt?: Date;
+
+  @property({
+    type: "Date",
+    name: "updated_at",
+  })
+  updatedAt?: Date;
+
+  constructor(data?: Partial<BaseEntity>) {
+    super(data);
+  }
+}
+
+// ./src/models/todo.model.ts
+import { model, property } from "@loopback/repository";
+import { BaseEntity } from "./base.entity";
+
+@model()
+export class Todo extends BaseEntity {
+  @property({
+    type: "string",
+    required: true,
+  })
+  title: string;
+
+  @property({
+    type: "boolean",
+  })
+  isComplete?: boolean;
+
+  constructor(data?: Partial<Todo>) {
+    super(data);
+  }
+}
+
+export interface TodoRelations {
+  // describe navigational properties here
+}
+
+export type TodoWithRelations = Todo & TodoRelations;
+```
+
+> TimestampRepositoryMixin
+
+- [Loopback 4 Mixins](https://loopback.io/doc/en/lb4/Mixin.html)
+- [Typescript Mixins](https://www.typescriptlang.org/docs/handbook/mixins.html)
+- [Javascript Mixins](https://javascript.info/mixins)
+
+```ts
+// ./src/mixins/time-stamp.mixin.ts
+import { Constructor } from "@loopback/core";
+import {
+  Count,
+  DataObject,
+  Entity,
+  EntityCrudRepository,
+  Options,
+  Where,
+} from "@loopback/repository";
+
+export function TimeStampRepositoryMixin<
+  E extends Entity & { createdAt?: Date; updatedAt?: Date },
+  ID,
+  R extends Constructor<EntityCrudRepository<E, ID>>
+>(repository: R) {
+  class MixedRepository extends repository {
+    async create(entity: DataObject<E>, options?: Options): Promise<E> {
+      entity.createdAt = new Date();
+      entity.updatedAt = new Date();
+      return super.create(entity, options);
+    }
+
+    async updateAll(
+      data: DataObject<E>,
+      where?: Where<E>,
+      options?: Options
+    ): Promise<Count> {
+      data.updatedAt = new Date();
+      return super.updateAll(data, where, options);
+    }
+
+    async replaceById(
+      id: ID,
+      data: DataObject<E>,
+      options?: Options
+    ): Promise<void> {
+      data.updatedAt = new Date();
+      return super.replaceById(id, data, options);
+    }
+
+    async updateById(
+      id: ID,
+      data: DataObject<E>,
+      options?: Options
+    ): Promise<void> {
+      data.updatedAt = new Date();
+      return super.updateById(id, data, options);
+    }
+  }
+  return MixedRepository;
+}
+
+// ./src/repositories/todo.repository.ts
+
+import { TimeStampRepositoryMixin } from "@english/mixins/time-stamp.mixin";
+import { Constructor, inject } from "@loopback/core";
+import { DefaultCrudRepository } from "@loopback/repository";
+import { EnglishDataSource } from "../datasources";
+import { Todo, TodoRelations } from "../models";
+
+export class TodoRepository extends TimeStampRepositoryMixin<
+  Todo,
+  typeof Todo.prototype.id,
+  Constructor<
+    DefaultCrudRepository<Todo, typeof Todo.prototype.id, TodoRelations>
+  >
+>(DefaultCrudRepository) {
+  constructor(@inject("datasources.english") dataSource: EnglishDataSource) {
+    super(Todo, dataSource);
+  }
+}
+```
+
 ### Migrate data to create/update schema
 
 ![image](https://user-images.githubusercontent.com/31009750/216074402-895555e4-c0f7-475b-b00a-abe89cc66008.png)
