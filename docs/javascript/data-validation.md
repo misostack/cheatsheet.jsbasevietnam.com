@@ -1,5 +1,9 @@
 # Data Validation
 
+## Class Validator
+
+- [Full Example](https://openbase.com/js/class-validator/documentation#validation-messages)
+
 ## Class Transformer
 
 ### 1. How to write custom validation decorators
