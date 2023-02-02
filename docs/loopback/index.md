@@ -336,12 +336,12 @@ export class Sample extends BaseEntity {
     type: "string",
 
     postgresql: {
-      columnName: "timetz_prop",
-      dataType: "time with time zone",
+      columnName: "time_prop",
+      dataType: "time",
       nullable: "YES",
     },
   })
-  timetzProp?: string;
+  timeProp?: string;
 
   @property({
     type: "string",
@@ -398,6 +398,90 @@ export interface SampleRelations {
 }
 
 export type SampleWithRelations = Sample & SampleRelations;
+```
+
+Data validation
+
+```ts
+import { model, property } from "@loopback/repository";
+import { IsISO8601, IsNotEmpty, Max, MaxLength, Min } from "class-validator";
+import { IsValidTime } from "./validator";
+
+@model()
+export class CreateSampleDto {
+  @property({
+    required: true,
+  })
+  @IsNotEmpty()
+  @MaxLength(30)
+  shortStringProp: string;
+
+  @property({
+    required: true,
+  })
+  @IsNotEmpty()
+  @MaxLength(120)
+  longStringProp?: string;
+
+  @property()
+  textProp?: string;
+
+  @property()
+  charProp?: string;
+
+  @property()
+  boolProp?: boolean;
+
+  @property()
+  bufferProp?: string;
+
+  @property({
+    required: true,
+  })
+  @IsNotEmpty()
+  @Min(0)
+  @Max(Number.MAX_SAFE_INTEGER)
+  intProp?: number;
+
+  @property({
+    required: true,
+  })
+  @IsNotEmpty()
+  @Min(0)
+  @Max(Number.MAX_VALUE)
+  bigintProp?: number;
+
+  @property({
+    required: true,
+  })
+  @IsNotEmpty()
+  @Max(Number.MAX_VALUE)
+  doubleProp?: number;
+
+  @property()
+  @IsISO8601()
+  dateProp?: string;
+
+  @property()
+  @IsISO8601()
+  timestamptzProp?: string;
+
+  @property()
+  @IsValidTime()
+  timeProp?: string;
+
+  @property()
+  pointProp?: string;
+
+  @property()
+  jsonProp?: object;
+
+  @property({
+    type: "array",
+    itemType: "string",
+  })
+  arrayStringProp?: string[];
+}
 ```
 
 ### Auto updated model properties createdAt and updatedAt

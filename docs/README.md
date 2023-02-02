@@ -9,3 +9,7 @@ The confluence of all topics about programming, deployment, system design, copy 
 ## Database Cheatsheet
 
 - [PostgreSQL](./postgresql/index.md)
+
+## Javascript Cheatsheet
+
+- [Data validation](./javascript/data-validation.md)
