@@ -174,6 +174,232 @@ id: string;
 
 - [PostSQL Data Type Mapping](https://loopback.io/doc/en/lb4/PostgreSQL-connector.html)
 
+![image](https://user-images.githubusercontent.com/31009750/216272587-1ebd5218-96cd-4af0-8831-96d3e6eb93ee.png)
+
+```ts
+import { model, property } from "@loopback/repository";
+import { BaseEntity } from "./base.entity";
+
+@model({
+  settings: {
+    idInjection: false,
+    postgresql: { schema: "public", table: "sample" },
+  },
+})
+export class Sample extends BaseEntity {
+  @property({
+    type: "string",
+    length: 30,
+
+    postgresql: {
+      columnName: "short_string_prop",
+      dataType: "character varying",
+      dataLength: 30,
+      dataPrecision: null,
+      dataScale: null,
+      nullable: "YES",
+    },
+  })
+  shortStringProp?: string;
+
+  @property({
+    type: "string",
+    length: 120,
+
+    postgresql: {
+      columnName: "long_string_prop",
+      dataType: "character varying",
+      dataLength: 120,
+      dataPrecision: null,
+      dataScale: null,
+      nullable: "YES",
+    },
+  })
+  longStringProp?: string;
+
+  @property({
+    type: "string",
+
+    postgresql: {
+      columnName: "text_prop",
+      dataType: "text",
+      nullable: "YES",
+    },
+  })
+  textProp?: string;
+
+  @property({
+    type: "string",
+    length: 1,
+
+    postgresql: {
+      columnName: "char_prop",
+      dataType: "character",
+      dataLength: 1,
+      dataPrecision: null,
+      dataScale: null,
+      nullable: "YES",
+    },
+  })
+  charProp?: string;
+
+  @property({
+    type: "boolean",
+
+    postgresql: {
+      columnName: "bool_prop",
+      dataType: "boolean",
+      nullable: "YES",
+    },
+  })
+  boolProp?: boolean;
+
+  @property({
+    type: "string",
+    required: false,
+    postgresql: {
+      columnName: "buffer_prop",
+      dataType: "bytea",
+      nullable: "YES",
+    },
+  })
+  bufferProp?: string;
+
+  @property({
+    type: "number",
+    scale: 0,
+
+    postgresql: {
+      columnName: "int_prop",
+      dataType: "integer",
+      dataLength: null,
+      dataPrecision: null,
+      dataScale: 0,
+      nullable: "YES",
+    },
+  })
+  intProp?: number;
+
+  @property({
+    type: "number",
+    scale: 0,
+
+    postgresql: {
+      columnName: "bigint_prop",
+      dataType: "bigint",
+      dataLength: null,
+      dataPrecision: null,
+      dataScale: 0,
+      nullable: "YES",
+    },
+  })
+  bigintProp?: number;
+
+  @property({
+    type: "number",
+    precision: 53,
+
+    postgresql: {
+      columnName: "double_prop",
+      dataType: "float",
+      dataLength: null,
+      dataPrecision: 53,
+      dataScale: null,
+      nullable: "YES",
+    },
+  })
+  doubleProp?: number;
+
+  @property({
+    type: "date",
+
+    postgresql: {
+      columnName: "date_prop",
+      dataType: "date",
+      nullable: "YES",
+    },
+  })
+  dateProp?: string;
+
+  @property({
+    type: "date",
+
+    postgresql: {
+      columnName: "timestamptz_prop",
+      dataType: "timestamp with time zone",
+      nullable: "YES",
+    },
+  })
+  timestamptzProp?: string;
+
+  @property({
+    type: "string",
+
+    postgresql: {
+      columnName: "timetz_prop",
+      dataType: "time with time zone",
+      nullable: "YES",
+    },
+  })
+  timetzProp?: string;
+
+  @property({
+    type: "string",
+
+    postgresql: {
+      columnName: "point_prop",
+      dataType: "point",
+      nullable: "YES",
+    },
+  })
+  pointProp?: string;
+
+  @property({
+    type: "object",
+
+    postgresql: {
+      columnName: "json_prop",
+      dataType: "json",
+      nullable: "YES",
+    },
+  })
+  jsonProp?: object;
+
+  @property({
+    type: "array",
+    itemType: "string",
+
+    postgresql: {
+      columnName: "array_string_prop",
+      dataType: "varchar[]",
+      nullable: "YES",
+    },
+  })
+  arrayStringProp?: string[];
+
+  // Define well-known properties here
+
+  // Indexer property to allow additional data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [prop: string]: any;
+
+  constructor(data?: Partial<Sample>) {
+    super(data);
+  }
+}
+
+export interface Point {
+  lat: number;
+  lng: number;
+}
+
+export interface SampleRelations {
+  // describe navigational properties here
+}
+
+export type SampleWithRelations = Sample & SampleRelations;
+```
+
 ### Auto updated model properties createdAt and updatedAt
 
 - https://github.com/loopbackio/loopback-next/issues/1857
