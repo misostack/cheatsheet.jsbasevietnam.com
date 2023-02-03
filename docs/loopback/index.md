@@ -690,7 +690,220 @@ migrate(process.argv).catch((err) => {
 ## Relations
 
 - [References from Loopback Official Document](https://loopback.io/doc/en/lb4/Relations.html)
+- [Relation best suited](https://github.com/loopbackio/loopback-next/issues/2341)
 
 ### One To One Relationship
 
 ![image](https://user-images.githubusercontent.com/31009750/216505076-cd331072-94ad-4606-8136-620c9e95e3d1.png)
+
+```ts
+// employee.model.ts
+/* eslint-disable @typescript-eslint/naming-convention */
+import { model, property } from "@loopback/repository";
+import { hasOne } from "@loopback/repository/dist/relations";
+import { BaseEntity } from "./base.entity";
+import { Vehicle } from "./vehicle.model";
+
+@model({
+  settings: {
+    scope: {
+      limit: 100,
+    },
+    indexes: {
+      name_idx: {
+        keys: {
+          name: 1,
+        },
+        options: {
+          unique: false,
+        },
+      },
+    },
+  },
+})
+export class Employee extends BaseEntity {
+  @property({
+    type: "string",
+    required: true,
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 120,
+    },
+  })
+  name: string;
+
+  @property({
+    type: "string",
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 120,
+    },
+  })
+  position?: string;
+
+  @hasOne(() => Vehicle, { keyTo: "employee_id", keyFrom: "id" })
+  vehicle: Vehicle;
+
+  constructor(data?: Partial<Employee>) {
+    super(data);
+  }
+}
+
+export interface EmployeeRelations {
+  // describe navigational properties here
+}
+
+export type EmployeeWithRelations = Employee & EmployeeRelations;
+
+// vehicle.model.ts
+import { Employee } from "./employee.model";
+/* eslint-disable @typescript-eslint/naming-convention */
+import { belongsTo, model, property } from "@loopback/repository";
+import { BaseEntity } from "./base.entity";
+
+export enum VehicleType {
+  BIKE = 1,
+  MOTOR_BIKE = 2,
+  CAR = 3,
+}
+
+@model({
+  settings: {
+    foreignKeys: {
+      fk_vehicle_employeeId: {
+        name: "fk_vehicle_employeeId",
+        entity: "Employee",
+        entityKey: "id",
+        foreignKey: "employee_id",
+        onDelete: "CASCADE",
+        onUpdate: "RESTRICT",
+      },
+    },
+  },
+})
+export class Vehicle extends BaseEntity {
+  @property({
+    type: "string",
+    required: true,
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 120,
+    },
+  })
+  name: string;
+
+  @property({
+    type: "number",
+    name: "vehicle_type",
+    postgresql: {
+      dataType: "integer",
+    },
+  })
+  vehicleType?: VehicleType;
+
+  @belongsTo(() => Employee, { name: "employee" })
+  employee_id: string;
+
+  constructor(data?: Partial<Vehicle>) {
+    super(data);
+  }
+}
+
+export interface VehicleRelations {
+  // describe navigational properties here
+}
+
+export type VehicleWithRelations = Vehicle & VehicleRelations;
+
+// employee.repository.ts
+import { TimeStampRepositoryMixin } from "@english/mixins/time-stamp.mixin";
+import { Constructor, Getter, inject } from "@loopback/core";
+import {
+  DefaultCrudRepository,
+  HasOneRepositoryFactory,
+  repository,
+} from "@loopback/repository";
+import { EnglishDataSource } from "../datasources";
+import { Employee, EmployeeRelations } from "../models";
+import { Vehicle } from "../models/vehicle.model";
+import { VehicleRepository } from "./vehicle.repository";
+
+export class EmployeeRepository extends TimeStampRepositoryMixin<
+  Employee,
+  typeof Employee.prototype.id,
+  Constructor<
+    DefaultCrudRepository<
+      Employee,
+      typeof Employee.prototype.id,
+      EmployeeRelations
+    >
+  >
+>(DefaultCrudRepository) {
+  public readonly vehicle: HasOneRepositoryFactory<
+    Vehicle,
+    typeof Employee.prototype.id
+  >;
+
+  constructor(
+    @inject("datasources.english") dataSource: EnglishDataSource,
+    @repository.getter("VehicleRepository")
+    getVehicleRepository: Getter<VehicleRepository>
+  ) {
+    super(Employee, dataSource);
+    this.vehicle = this.createHasOneRepositoryFactoryFor(
+      "vehicle",
+      getVehicleRepository
+    );
+    // add this line to register inclusion resolver
+    this.registerInclusionResolver("vehicle", this.vehicle.inclusionResolver);
+  }
+}
+// employee.controller.ts
+import {
+  Count,
+  CountSchema,
+  Filter,
+  FilterExcludingWhere,
+  repository,
+  Where,
+} from "@loopback/repository";
+import {
+  del,
+  get,
+  getModelSchemaRef,
+  param,
+  patch,
+  post,
+  put,
+  requestBody,
+  response,
+} from "@loopback/rest";
+import { Employee } from "../models";
+import { EmployeeRepository } from "../repositories";
+import { Vehicle } from "./../models/vehicle.model";
+
+export class EmployeeController {
+  @post("/employees/{id}/vehicle")
+  @response(200, {
+    description: "Employee Vehicle POST success",
+  })
+  async(
+    @param.path.string("id") employeeId: typeof Employee.prototype.id,
+    @requestBody({
+      content: {
+        "application/json": {
+          schema: getModelSchemaRef(Vehicle, { partial: true }),
+        },
+      },
+    })
+    vehicleData: Vehicle
+  ): Promise<Vehicle> {
+    return this.employeeRepository.vehicle(employeeId).create(vehicleData);
+  }
+}
+```
+
+## Indexes
+
+- [https://strongloop.com/strongblog/loopback-index-support-cloudant-model/](https://strongloop.com/strongblog/loopback-index-support-cloudant-model/)
+- [Defining index for a model in @model decorator #2753](https://github.com/loopbackio/loopback-next/issues/2753)
