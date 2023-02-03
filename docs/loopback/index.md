@@ -2,6 +2,7 @@
 
 - [x] Database Connectors
 - [x] Model
+- [x] Relations
 
 ## Database Connectors
 
@@ -49,6 +50,20 @@ export class EnglishDataSource
     super(dsConfig);
   }
 }
+```
+
+### Debug Database Query
+
+**Linux**
+
+```sh
+DEBUG=loopback:connector* npm start
+```
+
+**Window**
+
+```sh
+set DEBUG=loopback:connector* && npm start
 ```
 
 ## Model
@@ -671,3 +686,11 @@ migrate(process.argv).catch((err) => {
   process.exit(1);
 });
 ```
+
+## Relations
+
+- [References from Loopback Official Document](https://loopback.io/doc/en/lb4/Relations.html)
+
+### One To One Relationship
+
+![image](https://user-images.githubusercontent.com/31009750/216505076-cd331072-94ad-4606-8136-620c9e95e3d1.png)
