@@ -903,6 +903,109 @@ export class EmployeeController {
 }
 ```
 
+### One to Many
+
+![image](https://user-images.githubusercontent.com/31009750/216647177-1b9f5af0-4ab2-4867-99a0-98a7eafbcb90.png)
+
+```ts
+import { model, property, hasMany } from "@loopback/repository";
+import { BaseEntity } from "./base.entity";
+import { Order } from "./order.model";
+
+@model()
+export class Customer extends BaseEntity {
+  @property({
+    type: "string",
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 60,
+    },
+  })
+  name?: string;
+
+  @property({
+    type: "string",
+    name: "phone_number",
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 20,
+    },
+  })
+  phoneNumber?: string;
+
+  @property({
+    type: "string",
+    name: "email_address",
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 120,
+    },
+  })
+  emailAddress?: string;
+
+  @hasMany(() => Order)
+  orders: Order[];
+
+  constructor(data?: Partial<Customer>) {
+    super(data);
+  }
+}
+
+export interface CustomerRelations {
+  // describe navigational properties here
+}
+
+export type CustomerWithRelations = Customer & CustomerRelations;
+```
+
+```ts
+import { belongsTo, model, property } from "@loopback/repository";
+import { BaseEntity } from "./base.entity";
+import { Customer } from "./customer.model";
+
+@model()
+export class Order extends BaseEntity {
+  @property({
+    type: "date",
+    name: "delivery_date",
+    postgresql: {
+      dataType: "timestamp with time zone",
+      nullable: "YES",
+    },
+  })
+  deliveryDate?: string;
+
+  @belongsTo(
+    () => Customer,
+    {},
+    {
+      name: "customer_id",
+      postgresql: {
+        dataType: "VARCHAR",
+        dataLength: 36,
+      },
+    }
+  )
+  customerId: string;
+
+  constructor(data?: Partial<Order>) {
+    super(data);
+  }
+}
+
+export interface OrderRelations {
+  // describe navigational properties here
+}
+
+export type OrderWithRelations = Order & OrderRelations;
+```
+
+### Generate relation with CLI
+
+```sh
+lb4 relation
+```
+
 ## Indexes
 
 - [https://strongloop.com/strongblog/loopback-index-support-cloudant-model/](https://strongloop.com/strongblog/loopback-index-support-cloudant-model/)
