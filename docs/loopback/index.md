@@ -3,6 +3,7 @@
 - [x] Database Connectors
 - [x] Model
 - [x] Relations
+- [x] Filter
 
 ## Database Connectors
 
@@ -1000,10 +1001,163 @@ export interface OrderRelations {
 export type OrderWithRelations = Order & OrderRelations;
 ```
 
+#### Self-Relationship
+
+```ts
+/* eslint-disable @typescript-eslint/naming-convention */
+import { belongsTo, hasMany, model, property } from "@loopback/repository";
+import { hasOne } from "@loopback/repository/dist/relations";
+import { BaseEntity } from "./base.entity";
+import { Vehicle } from "./vehicle.model";
+
+@model({
+  settings: {
+    scope: {
+      limit: 100,
+    },
+    indexes: {
+      name_idx: {
+        keys: {
+          name: 1,
+        },
+        options: {
+          unique: false,
+        },
+      },
+    },
+  },
+})
+export class Employee extends BaseEntity {
+  @property({
+    type: "string",
+    required: true,
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 120,
+    },
+  })
+  name: string;
+
+  @property({
+    type: "string",
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 120,
+    },
+  })
+  position?: string;
+
+  @hasOne(() => Vehicle, { keyTo: "employeeId", keyFrom: "id" })
+  vehicle: Vehicle;
+
+  @hasMany(() => Employee, { keyTo: "managerId" })
+  employees: Employee[];
+
+  @belongsTo(
+    () => Employee,
+    { name: "manager" },
+    {
+      name: "manager_id",
+      postgresql: {
+        dataType: "VARCHAR",
+        dataLength: 36,
+      },
+    }
+  )
+  managerId?: string;
+
+  constructor(data?: Partial<Employee>) {
+    super(data);
+  }
+}
+
+export interface EmployeeRelations {
+  // describe navigational properties here
+}
+
+export type EmployeeWithRelations = Employee & EmployeeRelations;
+```
+
+```ts
+import { TimeStampRepositoryMixin } from "@english/mixins/time-stamp.mixin";
+import { Constructor, Getter, inject } from "@loopback/core";
+import {
+  BelongsToAccessor,
+  DefaultCrudRepository,
+  HasManyRepositoryFactory,
+  HasOneRepositoryFactory,
+  repository,
+} from "@loopback/repository";
+import { EnglishDataSource } from "../datasources";
+import { Employee, EmployeeRelations } from "../models";
+import { Vehicle } from "../models/vehicle.model";
+import { VehicleRepository } from "./vehicle.repository";
+
+export class EmployeeRepository extends TimeStampRepositoryMixin<
+  Employee,
+  typeof Employee.prototype.id,
+  Constructor<
+    DefaultCrudRepository<
+      Employee,
+      typeof Employee.prototype.id,
+      EmployeeRelations
+    >
+  >
+>(DefaultCrudRepository) {
+  public readonly vehicle: HasOneRepositoryFactory<
+    Vehicle,
+    typeof Employee.prototype.id
+  >;
+
+  public readonly employees: HasManyRepositoryFactory<
+    Employee,
+    typeof Employee.prototype.id
+  >;
+
+  public readonly manager: BelongsToAccessor<
+    Employee,
+    typeof Employee.prototype.id
+  >;
+
+  constructor(
+    @inject("datasources.english") dataSource: EnglishDataSource,
+    @repository.getter("VehicleRepository")
+    getVehicleRepository: Getter<VehicleRepository>,
+    @repository.getter("EmployeeRepository")
+    protected employeeRepositoryGetter: Getter<EmployeeRepository>
+  ) {
+    super(Employee, dataSource);
+    this.manager = this.createBelongsToAccessorFor(
+      "manager",
+      employeeRepositoryGetter
+    );
+    this.employees = this.createHasManyRepositoryFactoryFor(
+      "employees",
+      employeeRepositoryGetter
+    );
+    this.vehicle = this.createHasOneRepositoryFactoryFor(
+      "vehicle",
+      getVehicleRepository
+    );
+    // add this line to register inclusion resolver
+    this.registerInclusionResolver("vehicle", this.vehicle.inclusionResolver);
+    this.registerInclusionResolver("manager", this.manager.inclusionResolver);
+  }
+}
+```
+
 ### Generate relation with CLI
 
 ```sh
 lb4 relation
+```
+
+## Filter
+
+- [Filter](https://loopback.io/doc/en/lb4/Include-filter.html)
+
+```sh
+curl --location -g --request GET 'http://localhost:1337/employees?filter[include][0][relation]=vehicle&filter[include][0][scope][where][vehicleType]=1&filter[include][1][relation]=manager'
 ```
 
 ## Indexes
