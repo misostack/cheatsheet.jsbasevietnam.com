@@ -1155,6 +1155,7 @@ lb4 relation
 ## Filter
 
 - [Filter](https://loopback.io/doc/en/lb4/Include-filter.html)
+- [Where Filter](https://loopback.io/doc/en/lb4/Where-filter.html)
 
 ```sh
 curl --location -g --request GET 'http://localhost:1337/employees?filter[include][0][relation]=vehicle&filter[include][0][scope][where][vehicleType]=1&filter[include][1][relation]=manager'
