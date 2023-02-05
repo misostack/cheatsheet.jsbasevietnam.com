@@ -1146,6 +1146,10 @@ export class EmployeeRepository extends TimeStampRepositoryMixin<
 }
 ```
 
+### Many to Many Relationship
+
+![image](https://user-images.githubusercontent.com/31009750/216799419-bebefb3a-0144-4de5-97a3-68bd77d77cba.png)
+
 ### Generate relation with CLI
 
 ```sh
