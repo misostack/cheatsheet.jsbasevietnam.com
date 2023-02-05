@@ -1150,6 +1150,549 @@ export class EmployeeRepository extends TimeStampRepositoryMixin<
 
 ![image](https://user-images.githubusercontent.com/31009750/216799419-bebefb3a-0144-4de5-97a3-68bd77d77cba.png)
 
+**Models**
+
+```ts
+import { hasMany, model, property } from "@loopback/repository";
+import { BaseEntity } from "./base.entity";
+import { BookAuthor } from "./book-author.model";
+import { Book } from "./book.model";
+
+@model()
+export class Author extends BaseEntity {
+  @property({
+    type: "string",
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 60,
+    },
+  })
+  name?: string;
+
+  @hasMany(() => Book, { through: { model: () => BookAuthor } })
+  books: Book[];
+
+  constructor(data?: Partial<Author>) {
+    super(data);
+  }
+}
+
+export interface AuthorRelations {
+  // describe navigational properties here
+}
+
+export type AuthorWithRelations = Author & AuthorRelations;
+
+import { hasMany, model, property } from "@loopback/repository";
+import { Author } from "./author.model";
+import { BaseEntity } from "./base.entity";
+import { BookAuthor } from "./book-author.model";
+
+@model()
+export class Book extends BaseEntity {
+  @property({
+    type: "string",
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 60,
+    },
+  })
+  name?: string;
+
+  @hasMany(() => Author, { through: { model: () => BookAuthor } })
+  authors: Author[];
+
+  constructor(data?: Partial<Book>) {
+    super(data);
+  }
+}
+
+export interface BookRelations {
+  // describe navigational properties here
+}
+
+export type BookWithRelations = Book & BookRelations;
+
+import { model, property } from "@loopback/repository";
+import { BaseEntity } from "./base.entity";
+
+@model()
+export class BookAuthor extends BaseEntity {
+  @property({
+    type: "string",
+    name: "book_id",
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 36,
+    },
+  })
+  bookId?: string;
+
+  @property({
+    type: "string",
+    name: "author_id",
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 36,
+    },
+  })
+  authorId?: string;
+
+  constructor(data?: Partial<BookAuthor>) {
+    super(data);
+  }
+}
+
+export interface BookAuthorRelations {
+  // describe navigational properties here
+}
+
+export type BookAuthorWithRelations = BookAuthor & BookAuthorRelations;
+```
+
+**DTO**
+
+```ts
+import { Author, Book } from "@english/models";
+import { property } from "@loopback/repository";
+
+export class BookDto extends Book {
+  @property({
+    type: "array",
+    itemType: "string",
+  })
+  authorIds: typeof Author.prototype.id[];
+}
+```
+
+**Repositories**
+
+```ts
+/* eslint-disable @typescript-eslint/naming-convention */
+import { TimeStampRepositoryMixin } from "@english/mixins/time-stamp.mixin";
+import { Constructor, Getter, inject } from "@loopback/core";
+import {
+  DefaultCrudRepository,
+  HasManyThroughRepositoryFactory,
+  repository,
+} from "@loopback/repository";
+import { EnglishDataSource } from "../datasources";
+import { Author, AuthorRelations, Book, BookAuthor } from "../models";
+import { BookAuthorRepository } from "./book-author.repository";
+import { BookRepository } from "./book.repository";
+
+export class AuthorRepository extends TimeStampRepositoryMixin<
+  Author,
+  typeof Author.prototype.id,
+  Constructor<
+    DefaultCrudRepository<Author, typeof Author.prototype.id, AuthorRelations>
+  >
+>(DefaultCrudRepository) {
+  public readonly books: HasManyThroughRepositoryFactory<
+    Book,
+    typeof Book.prototype.id,
+    BookAuthor,
+    typeof Author.prototype.id
+  >;
+
+  constructor(
+    @inject("datasources.english") dataSource: EnglishDataSource,
+    @repository.getter("BookAuthorRepository")
+    protected BookAuthorRepositoryGetter: Getter<BookAuthorRepository>,
+    @repository.getter("BookRepository")
+    protected bookRepositoryGetter: Getter<BookRepository>
+  ) {
+    super(Author, dataSource);
+    this.books = this.createHasManyThroughRepositoryFactoryFor(
+      "books",
+      bookRepositoryGetter,
+      BookAuthorRepositoryGetter
+    );
+    this.registerInclusionResolver("books", this.books.inclusionResolver);
+  }
+}
+
+/* eslint-disable @typescript-eslint/naming-convention */
+import { TimeStampRepositoryMixin } from "@english/mixins/time-stamp.mixin";
+import { Constructor, Getter, inject } from "@loopback/core";
+import {
+  DefaultCrudRepository,
+  HasManyThroughRepositoryFactory,
+  repository,
+} from "@loopback/repository";
+import { EnglishDataSource } from "../datasources";
+import { Author, Book, BookAuthor, BookRelations } from "../models";
+import { AuthorRepository } from "./author.repository";
+import { BookAuthorRepository } from "./book-author.repository";
+
+export class BookRepository extends TimeStampRepositoryMixin<
+  Book,
+  typeof Book.prototype.id,
+  Constructor<
+    DefaultCrudRepository<Book, typeof Book.prototype.id, BookRelations>
+  >
+>(DefaultCrudRepository) {
+  public readonly authors: HasManyThroughRepositoryFactory<
+    Author,
+    typeof Author.prototype.id,
+    BookAuthor,
+    typeof Book.prototype.id
+  >;
+
+  constructor(
+    @inject("datasources.english") dataSource: EnglishDataSource,
+    @repository.getter("BookAuthorRepository")
+    protected BookAuthorRepositoryGetter: Getter<BookAuthorRepository>,
+    @repository.getter("AuthorRepository")
+    protected authorRepositoryGetter: Getter<AuthorRepository>
+  ) {
+    super(Book, dataSource);
+    this.authors = this.createHasManyThroughRepositoryFactoryFor(
+      "authors",
+      authorRepositoryGetter,
+      BookAuthorRepositoryGetter
+    );
+    this.registerInclusionResolver("authors", this.authors.inclusionResolver);
+  }
+}
+
+import { inject } from "@loopback/core";
+import { DefaultCrudRepository } from "@loopback/repository";
+import { EnglishDataSource } from "../datasources";
+import { BookAuthor, BookAuthorRelations } from "../models";
+
+export class BookAuthorRepository extends DefaultCrudRepository<
+  BookAuthor,
+  typeof BookAuthor.prototype.bookId,
+  BookAuthorRelations
+> {
+  constructor(@inject("datasources.english") dataSource: EnglishDataSource) {
+    super(BookAuthor, dataSource);
+  }
+}
+```
+
+**Controllers**
+
+```ts
+import {
+  Count,
+  CountSchema,
+  Filter,
+  FilterExcludingWhere,
+  repository,
+  Where,
+} from "@loopback/repository";
+import {
+  post,
+  param,
+  get,
+  getModelSchemaRef,
+  patch,
+  put,
+  del,
+  requestBody,
+  response,
+} from "@loopback/rest";
+import { Author } from "../models";
+import { AuthorRepository } from "../repositories";
+
+export class AuthorController {
+  constructor(
+    @repository(AuthorRepository)
+    public authorRepository: AuthorRepository
+  ) {}
+
+  @post("/authors")
+  @response(200, {
+    description: "Author model instance",
+    content: { "application/json": { schema: getModelSchemaRef(Author) } },
+  })
+  async create(
+    @requestBody({
+      content: {
+        "application/json": {
+          schema: getModelSchemaRef(Author, {
+            title: "NewAuthor",
+            exclude: ["id"],
+          }),
+        },
+      },
+    })
+    author: Omit<Author, "id">
+  ): Promise<Author> {
+    return this.authorRepository.create(author);
+  }
+
+  @get("/authors/count")
+  @response(200, {
+    description: "Author model count",
+    content: { "application/json": { schema: CountSchema } },
+  })
+  async count(@param.where(Author) where?: Where<Author>): Promise<Count> {
+    return this.authorRepository.count(where);
+  }
+
+  @get("/authors")
+  @response(200, {
+    description: "Array of Author model instances",
+    content: {
+      "application/json": {
+        schema: {
+          type: "array",
+          items: getModelSchemaRef(Author, { includeRelations: true }),
+        },
+      },
+    },
+  })
+  async find(@param.filter(Author) filter?: Filter<Author>): Promise<Author[]> {
+    return this.authorRepository.find(filter);
+  }
+
+  @patch("/authors")
+  @response(200, {
+    description: "Author PATCH success count",
+    content: { "application/json": { schema: CountSchema } },
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        "application/json": {
+          schema: getModelSchemaRef(Author, { partial: true }),
+        },
+      },
+    })
+    author: Author,
+    @param.where(Author) where?: Where<Author>
+  ): Promise<Count> {
+    return this.authorRepository.updateAll(author, where);
+  }
+
+  @get("/authors/{id}")
+  @response(200, {
+    description: "Author model instance",
+    content: {
+      "application/json": {
+        schema: getModelSchemaRef(Author, { includeRelations: true }),
+      },
+    },
+  })
+  async findById(
+    @param.path.string("id") id: string,
+    @param.filter(Author, { exclude: "where" })
+    filter?: FilterExcludingWhere<Author>
+  ): Promise<Author> {
+    return this.authorRepository.findById(id, filter);
+  }
+
+  @patch("/authors/{id}")
+  @response(204, {
+    description: "Author PATCH success",
+  })
+  async updateById(
+    @param.path.string("id") id: string,
+    @requestBody({
+      content: {
+        "application/json": {
+          schema: getModelSchemaRef(Author, { partial: true }),
+        },
+      },
+    })
+    author: Author
+  ): Promise<void> {
+    await this.authorRepository.updateById(id, author);
+  }
+
+  @put("/authors/{id}")
+  @response(204, {
+    description: "Author PUT success",
+  })
+  async replaceById(
+    @param.path.string("id") id: string,
+    @requestBody() author: Author
+  ): Promise<void> {
+    await this.authorRepository.replaceById(id, author);
+  }
+
+  @del("/authors/{id}")
+  @response(204, {
+    description: "Author DELETE success",
+  })
+  async deleteById(@param.path.string("id") id: string): Promise<void> {
+    await this.authorRepository.deleteById(id);
+  }
+}
+
+import { toArrayPromise } from "@english/helpers";
+import {
+  Count,
+  CountSchema,
+  Filter,
+  FilterExcludingWhere,
+  repository,
+  Where,
+} from "@loopback/repository";
+import {
+  del,
+  get,
+  getModelSchemaRef,
+  param,
+  patch,
+  post,
+  put,
+  requestBody,
+  response,
+} from "@loopback/rest";
+import { Book } from "../models";
+import { BookRepository } from "../repositories";
+import { BookDto } from "./../dtos/book.dto";
+
+export class BookController {
+  constructor(
+    @repository(BookRepository)
+    public bookRepository: BookRepository
+  ) {}
+
+  @post("/books")
+  @response(200, {
+    description: "Book model instance",
+    content: { "application/json": { schema: getModelSchemaRef(Book) } },
+  })
+  async create(
+    @requestBody({
+      content: {
+        "application/json": {
+          schema: getModelSchemaRef(BookDto, {
+            title: "NewBook",
+          }),
+        },
+      },
+    })
+    book: Omit<BookDto, "id">
+  ): Promise<Book> {
+    const { authorIds, ...bookData } = book;
+    const b = await this.bookRepository.create(bookData);
+    if (b) {
+      // link
+      await Promise.all(
+        toArrayPromise(authorIds, (authorId: string) => {
+          return this.bookRepository.authors(b.id).link(authorId);
+        })
+      );
+    }
+    return this.bookRepository.findById(b.id, { include: ["authors"] });
+  }
+
+  @get("/books/count")
+  @response(200, {
+    description: "Book model count",
+    content: { "application/json": { schema: CountSchema } },
+  })
+  async count(@param.where(Book) where?: Where<Book>): Promise<Count> {
+    return this.bookRepository.count(where);
+  }
+
+  @get("/books")
+  @response(200, {
+    description: "Array of Book model instances",
+    content: {
+      "application/json": {
+        schema: {
+          type: "array",
+          items: getModelSchemaRef(Book, { includeRelations: true }),
+        },
+      },
+    },
+  })
+  async find(@param.filter(Book) filter?: Filter<Book>): Promise<Book[]> {
+    return this.bookRepository.find(filter);
+  }
+
+  @patch("/books")
+  @response(200, {
+    description: "Book PATCH success count",
+    content: { "application/json": { schema: CountSchema } },
+  })
+  async updateAll(
+    @requestBody({
+      content: {
+        "application/json": {
+          schema: getModelSchemaRef(Book, { partial: true }),
+        },
+      },
+    })
+    book: Book,
+    @param.where(Book) where?: Where<Book>
+  ): Promise<Count> {
+    return this.bookRepository.updateAll(book, where);
+  }
+
+  @get("/books/{id}")
+  @response(200, {
+    description: "Book model instance",
+    content: {
+      "application/json": {
+        schema: getModelSchemaRef(Book, { includeRelations: true }),
+      },
+    },
+  })
+  async findById(
+    @param.path.string("id") id: string,
+    @param.filter(Book, { exclude: "where" })
+    filter?: FilterExcludingWhere<Book>
+  ): Promise<Book> {
+    return this.bookRepository.findById(id, filter);
+  }
+
+  @patch("/books/{id}")
+  @response(204, {
+    description: "Book PATCH success",
+  })
+  async updateById(
+    @param.path.string("id") id: string,
+    @requestBody({
+      content: {
+        "application/json": {
+          schema: getModelSchemaRef(BookDto, { partial: true }),
+        },
+      },
+    })
+    book: BookDto
+  ): Promise<void> {
+    const exitedLinks = await this.bookRepository.authors(id).find();
+    if (exitedLinks.length > 0) {
+      await this.bookRepository.authors(id).unlinkAll();
+    }
+    await Promise.all(
+      toArrayPromise(book.authorIds, (authorId: string) => {
+        return this.bookRepository.authors(id).link(authorId);
+      })
+    );
+    // await this.bookRepository.authors(id).link(book.authorId);
+    await this.bookRepository.updateById(id, book);
+  }
+
+  @put("/books/{id}")
+  @response(204, {
+    description: "Book PUT success",
+  })
+  async replaceById(
+    @param.path.string("id") id: string,
+    @requestBody() book: Book
+  ): Promise<void> {
+    await this.bookRepository.replaceById(id, book);
+  }
+
+  @del("/books/{id}")
+  @response(204, {
+    description: "Book DELETE success",
+  })
+  async deleteById(@param.path.string("id") id: string): Promise<void> {
+    await this.bookRepository.deleteById(id);
+  }
+}
+```
+
 ### Generate relation with CLI
 
 ```sh
