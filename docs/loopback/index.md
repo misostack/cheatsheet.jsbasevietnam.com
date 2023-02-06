@@ -4,6 +4,8 @@
 - [x] Model
 - [x] Relations
 - [x] Filter
+- [x] Indexes
+- [x] Tests
 
 ## Database Connectors
 
@@ -1712,3 +1714,16 @@ curl --location -g --request GET 'http://localhost:1337/employees?filter[include
 
 - [https://strongloop.com/strongblog/loopback-index-support-cloudant-model/](https://strongloop.com/strongblog/loopback-index-support-cloudant-model/)
 - [Defining index for a model in @model decorator #2753](https://github.com/loopbackio/loopback-next/issues/2753)
+
+## Tests
+
+![image](https://user-images.githubusercontent.com/31009750/216938382-55f54855-5b30-4b75-9f1c-35ec25cb43d8.png)
+
+![image](https://user-images.githubusercontent.com/31009750/216941910-d3d1883c-9fa7-4c4a-81e3-230d384ed5d5.png)
+
+### Tools
+
+- [Spies](https://sinonjs.org/releases/latest/spies/)
+- [Super Test](https://github.com/ladjs/supertest)
+- [Mocha](https://mochajs.org/)
+- [Chai](https://www.chaijs.com/guide/)
