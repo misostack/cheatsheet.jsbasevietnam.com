@@ -1695,6 +1695,132 @@ export class BookController {
 }
 ```
 
+### One To Many ( References Many )
+
+```ts
+import { model, property, referencesMany } from "@loopback/repository";
+import { BaseEntity } from "./base.entity";
+import { Store } from "./store.model";
+
+@model()
+export class Location extends BaseEntity {
+  @property({
+    type: "string",
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 60,
+    },
+  })
+  name?: string;
+
+  @referencesMany(() => Store)
+  storeIds: string[];
+
+  constructor(data?: Partial<Location>) {
+    super(data);
+  }
+}
+
+export interface LocationRelations {
+  // describe navigational properties here
+}
+
+export type LocationWithRelations = Location & LocationRelations;
+
+import { model, property } from "@loopback/repository";
+import { BaseEntity } from "./base.entity";
+
+@model()
+export class Store extends BaseEntity {
+  @property({
+    type: "string",
+    postgresql: {
+      dataType: "VARCHAR",
+      dataLength: 60,
+    },
+  })
+  name?: string;
+  constructor(data?: Partial<Store>) {
+    super(data);
+  }
+}
+
+export interface StoreRelations {
+  // describe navigational properties here
+}
+
+export type StoreWithRelations = Store & StoreRelations;
+```
+
+```ts
+import { Constructor, inject, Getter } from "@loopback/core";
+
+import {
+  DefaultCrudRepository,
+  repository,
+  ReferencesManyAccessor,
+} from "@loopback/repository";
+import { EnglishDataSource } from "../datasources";
+import { Location, LocationRelations, Store } from "../models";
+
+import { DATASOURCE } from "@english/config/environment";
+import { TimeStampRepositoryMixin } from "@english/mixins/time-stamp.mixin";
+import { StoreRepository } from "./store.repository";
+
+export class LocationRepository extends TimeStampRepositoryMixin<
+  Location,
+  typeof Location.prototype.id,
+  Constructor<
+    DefaultCrudRepository<
+      Location,
+      typeof Location.prototype.id,
+      LocationRelations
+    >
+  >
+>(DefaultCrudRepository) {
+  public readonly stores: ReferencesManyAccessor<
+    Store,
+    typeof Location.prototype.id
+  >;
+
+  constructor(
+    @inject(`datasources.${DATASOURCE}`) dataSource: EnglishDataSource,
+    @repository.getter("StoreRepository")
+    protected storeRepositoryGetter: Getter<StoreRepository>
+  ) {
+    super(Location, dataSource);
+    this.stores = this.createReferencesManyAccessorFor(
+      "stores",
+      storeRepositoryGetter
+    );
+    this.registerInclusionResolver("stores", this.stores.inclusionResolver);
+  }
+}
+
+import { Constructor, inject } from "@loopback/core";
+
+import { DefaultCrudRepository } from "@loopback/repository";
+import { EnglishDataSource } from "../datasources";
+import { Store, StoreRelations } from "../models";
+
+import { DATASOURCE } from "@english/config/environment";
+import { TimeStampRepositoryMixin } from "@english/mixins/time-stamp.mixin";
+
+export class StoreRepository extends TimeStampRepositoryMixin<
+  Store,
+  typeof Store.prototype.id,
+  Constructor<
+    DefaultCrudRepository<Store, typeof Store.prototype.id, StoreRelations>
+  >
+>(DefaultCrudRepository) {
+  constructor(
+    @inject(`datasources.${DATASOURCE}`) dataSource: EnglishDataSource
+  ) {
+    super(Store, dataSource);
+  }
+}
+```
+
 ### Generate relation with CLI
 
 ```sh
