@@ -13,3 +13,7 @@ The confluence of all topics about programming, deployment, system design, copy 
 ## Javascript Cheatsheet
 
 - [Data validation](./javascript/data-validation.md)
+
+## Testing
+
+- [Testing](./testing/index.md)
