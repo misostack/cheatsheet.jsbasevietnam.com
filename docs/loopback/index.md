@@ -6,6 +6,7 @@
 - [x] Filter
 - [x] Indexes
 - [x] Tests
+- [x] Authorization
 
 ## Database Connectors
 
@@ -1853,3 +1854,15 @@ curl --location -g --request GET 'http://localhost:1337/employees?filter[include
 - [Super Test](https://github.com/ladjs/supertest)
 - [Mocha](https://mochajs.org/)
 - [Chai](https://www.chaijs.com/guide/)
+
+## Authorization
+
+```sh
+npm i @loopback/authentication
+```
+
+### Casbin
+
+- [Getting started](https://casbin.org/docs/get-started)
+- [String Adapter](https://github.com/casbin/node-casbin/blob/master/src/persist/stringAdapter.ts)
+- [Casbin typescript example](../security/casbin.md)
