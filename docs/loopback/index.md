@@ -1855,10 +1855,26 @@ curl --location -g --request GET 'http://localhost:1337/employees?filter[include
 - [Mocha](https://mochajs.org/)
 - [Chai](https://www.chaijs.com/guide/)
 
-## Authorization
+### Securing Application
+
+> **Authentication** is a process of verifying user/entity to the system, which enables identified/validated access to the protected routes.
+
+![image](https://user-images.githubusercontent.com/31009750/219852190-2b4aab64-c364-4cd3-8aa8-e2add856c2e8.png)
+
+> **Authorization** is a process of deciding if a user can perform an action on a protected resource.
+
+![image](https://user-images.githubusercontent.com/31009750/219863855-c67d564e-c218-49c3-82ba-7f25ffaf10e9.png)
+
+### Authentication
 
 ```sh
 npm i @loopback/authentication
+```
+
+### Authorization
+
+```sh
+
 ```
 
 ### Casbin
