@@ -1874,7 +1874,7 @@ npm i @loopback/authentication
 ### Authorization
 
 ```sh
-
+npm i @loopback/authorization
 ```
 
 ### Casbin
