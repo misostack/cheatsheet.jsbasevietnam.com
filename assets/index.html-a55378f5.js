@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-4f9e73d4","path":"/security/","title":"Security","lang":"en-US","frontmatter":{},"headers":[],"git":{"updatedTime":1676645666000,"contributors":[{"name":"misostack","email":"misostack.com@gmail.com","commits":1}]},"filePathRelative":"security/index.md"}');export{t as data};
