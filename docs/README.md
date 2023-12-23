@@ -42,4 +42,6 @@ The confluence of all topics about programming, deployment, system design, copy 
 
 ## Example projects
 
-1. [JSBaseCMS API](./jsbase-cms/index.md)
+### [JSBaseCMS API](./jsbase-cms/index.md)
+
+### [Plan Application](./plan/index.md)
