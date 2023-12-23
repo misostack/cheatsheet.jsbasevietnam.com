@@ -2,13 +2,31 @@
 
 ## Restful API Design and Develop Guidelines
 
+### Restful API Design criteria
+
+#### Database Design Criteria
+
+- [x] Data size
+- [x] Reads & Writes
+- [x] Number of operations
+- [x] Operations per second
+- [x] Required latency
+- [x] Pinning attribute queries
+- [x] Durability
+
+**Identify Workload**
+
+![Identify workload template](/assets/api/identify-workload-template.png)
+
+- [Identify Workload Template Google Sheet Version](https://docs.google.com/spreadsheets/d/1ggt0ZZD1UXqrz7Jw771f4OA3YhEwp00l1JHFHnQpioM/edit?usp=sharing)
+
 ### Basic steps to design and develop a Restful API
 
-1. High Level Design
+#### 1. High Level Design
 
 - Break system into components/modules
 
-2. Designing and Seeding the Database
+#### 2. Designing and Seeding the Database
 
 - Read and analyze requirements, define system actors: entity + action + relationship to create your database schema
 - Design your data constraints: data types, data size, value restrictions
