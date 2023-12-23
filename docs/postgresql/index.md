@@ -1,9 +1,5 @@
 # PostgreSQL Cheatsheet
 
-1. Docker
-2. Administrator
-3. Backup and restore
-
 ## I. Docker
 
 ### 1.1. Configuration
@@ -145,3 +141,16 @@ tar -xvf db-backup-filename.tar.gz -C
 2. The 2nd way : change the db owner in sql script
 
 Here is 2 steps
+
+## Design Database
+
+### Naming rules
+
+```ts
+Primary Key - PK_TableName_ColumnName(s)
+ForeignKey - FK_TableName_ColumnName_ReferenceTable_ReferenceColumn
+Unique - UNQ_TableName_ColumnName
+Check - CHK_Table_Name_Condition
+Clustered Index - IDX_Clust_TableName_Columns
+NonClustered Index - IDX_NC_TableName_Columns
+```
