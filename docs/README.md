@@ -2,30 +2,44 @@
 
 The confluence of all topics about programming, deployment, system design, copy and paste solutions, popular frameworks
 
-## NodeJS Cheatsheet
+## Programming Languages
+
+### NodeJS Cheatsheet
 
 - [Loopback 4](./loopback/index.md)
 
-## Database Cheatsheet
-
-- [PostgreSQL](./postgresql/index.md)
-
-## Javascript Cheatsheet
+### Javascript Cheatsheet
 
 - [Data validation](./javascript/data-validation.md)
 
-## Testing
+### Python Cheatsheet
 
-- [Testing](./testing/index.md)
+- [Python](./python/index.md)
 
-## Security
+## System Design
+
+### Database Cheatsheet
+
+- [PostgreSQL](./postgresql/index.md)
+
+### Design and Develop API
+
+- [Design and Develop API Cheatsheet](./api/index.md)
+
+### Security
 
 - [Security](./security/index.md)
 
-## Git Cheatsheet
+## Software Development Lifecycle
+
+### Testing
+
+- [Testing](./testing/index.md)
+
+### Git Cheatsheet
 
 - [Git Cheatsheet](./git/index.md)
 
-## Projects
+## Example projects
 
 1. [JSBaseCMS API](./jsbase-cms/index.md)
