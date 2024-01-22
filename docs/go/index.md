@@ -32,9 +32,30 @@ go mod init
 go run ./main.go
 go build
 ./go2024
+
+# run when your main file import local file in the same package
+go run *.go
+# or
+go run .
 ```
 
 ### Resources
 
 - [Go Packages](https://pkg.go.dev/)
 - [Git ignore template](https://github.com/github/gitignore/blob/main/Go.gitignore)
+
+## Fundamental
+
+### DataTypes and its default value
+
+1. String
+2. Character
+3. Number
+4. Boolean
+5. Nil
+
+**Variables**
+
+**Working with array,slices**
+
+**Using map in go**
