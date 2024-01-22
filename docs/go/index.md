@@ -37,3 +37,4 @@ go build
 ### Resources
 
 - [Go Packages](https://pkg.go.dev/)
+- [Git ignore template](https://github.com/github/gitignore/blob/main/Go.gitignore)
