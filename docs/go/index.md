@@ -44,18 +44,6 @@ go run .
 - [Go Packages](https://pkg.go.dev/)
 - [Git ignore template](https://github.com/github/gitignore/blob/main/Go.gitignore)
 
-## Fundamental
+### Samples
 
-### DataTypes and its default value
-
-1. String
-2. Character
-3. Number
-4. Boolean
-5. Nil
-
-**Variables**
-
-**Working with array,slices**
-
-**Using map in go**
+- [Golang Tutorial 2024](https://github.com/misostack/go2024)
