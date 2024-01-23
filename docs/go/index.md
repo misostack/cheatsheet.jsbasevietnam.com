@@ -47,3 +47,4 @@ go run .
 ### Samples
 
 - [Golang Tutorial 2024](https://github.com/misostack/go2024)
+- [Go by examples](https://gobyexample.com/)
